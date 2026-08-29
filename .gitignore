@@ -1,0 +1,23 @@
+# ---- dependencies ----
+node_modules/
+
+# ---- secrets (NEVER commit) ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.csr
+*.crt
+*.ca-bundle
+jhengservices_com/
+sessions/
+
+# ---- prebuilt Angular bundles (239 MB, ab serve nahi hote) ----
+app/
+
+# ---- backups / logs / junk ----
+*.bak
+*.log
+.DS_Store
+Thumbs.db

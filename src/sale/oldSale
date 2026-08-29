@@ -1,0 +1,95 @@
+   const formData = req.body;  
+    const adminEditedSale = req.body; // Assuming req.body contains the updated sale data
+    formData._id = req.params.productId
+        try {
+          // Validate formData
+              // if (!((formData.customerRef && formData.customerRef._id) || formData.wCustomerName) || formData.products.length === 0 || !formData.subTotal || formData?.productRef.length==0) {
+              //   throw new Error('formData is missing required fields (customerName, grandTotal).');
+              // }
+      
+           // Step 1: Retrieve the original sale data
+    const originalSale = await Sale.findById(req.params.productId)
+    .populate({
+      path: 'customerRef'
+    })
+    .populate({
+      path: 'saleRef',
+      populate: {
+        path: 'stockRef',
+        populate: {
+          path: 'productRef'
+        }
+      }
+    })
+    if (!originalSale) {
+      return res.status(404).json({ error: 'Sale not found' });
+    }
+   
+        // Step 2: Compare the original and edited sale data
+        const deletedProducts = [];
+        const addedProducts = [];
+        const updatedProducts = [];
+
+    
+
+
+      originalSale.saleRef.forEach(sale => {
+        console.log("saleRed  ", sale.stockRef._id );
+          let find = formData.saleRef.find(item => item.stockRef._id.toString() === sale.stockRef._id.toString());
+            if (!find) {
+                deletedProducts.push(sale);
+            }else{
+                updatedProducts.push(sale);
+            }
+        });
+
+        formData.saleRef.forEach(productId => {
+          let find = originalSale.saleRef.find(item => item.stockRef._id.toString() === productId.stockRef._id.toString());
+            if (!find) {
+                addedProducts.push(productId);
+            } 
+        });
+
+        // console.log("deletedProducts ", deletedProducts);
+        // console.log("addedProducts ", addedProducts);
+        // console.log("updatedProducts ", updatedProducts);
+
+        await updateStockAndBalance(deletedProducts, addedProducts, updatedProducts, formData, originalSale);
+          let  allStockProductsIds = []
+        // // Step 4: update saleStock first:
+         for (const sale of formData.saleRef) {
+          if(sale && !sale._id){
+            delete sale._id
+            let saleStock = await StockSale.create(sale)
+            allStockProductsIds.push(saleStock._id)
+          }else{
+            let saleStock = await StockSale.findByIdAndUpdate(sale._id, sale);
+            allStockProductsIds.push(saleStock._id)
+          }
+        
+        }
+        formData.saleRef = allStockProductsIds
+  
+  
+       // Call createSaleTransaction function
+       const result = await editSaleTransaction(formData);
+       if (result) {
+        console.log(": result is: ", result)
+        createInvoice(result,'../public/invoice/'+ result.orderNo+'.pdf',
+        (doc)=>{
+          res.setHeader('Content-Disposition', 'attachment; filename='+result.orderNo+"-report.pdf");
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/pdf");
+        
+            doc.pipe(res)
+        }
+        )
+        // res.status(200).json( result );
+      }
+   
+    
+    } catch (error) {
+      // Error occurred during any operation
+      console.error(error);
+      res.status(500).json({ message: 'An error occurred during sale processing.' });
+    }

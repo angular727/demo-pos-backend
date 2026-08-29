@@ -1,0 +1,91 @@
+
+
+
+const ReturnObj={
+
+    status:"upload",
+    techName: "",
+    recent:true,
+    "assignedDate": "",
+    "issueList": "",
+    "workDone":"",
+    "servicePartsConsumed": "",
+    "resolvedDate" : "",
+
+    "totalDays":"",
+    "contactPersonName": "",
+    "contactNumber": "",
+    "location": "",
+    "complaintStatus":  "",
+
+    "additionalRemarks": "",
+   
+    "finalBarCode": "",
+    // "vendorFeedback": {},
+    // "nccFeedback": {},
+    "shopPic": {},
+    "beforePic": {},
+    "afterPic": {},
+    "optionalPic": {},
+    historyDissatisfied:[],
+    //more headings that is not a part of standard headings
+    voltage:'',
+    town:'',
+    barCode:'',
+    assetCode:'',
+    level:'',
+    reportDateTime:'',
+    compressorFault:{},
+    gasLeak:{},
+    otherPartFaults:{},
+    moreOtherPartFaults:{},
+    service:{},
+    closeComplaint:{},
+    techFeedback:'',
+    technician:[],
+    recentlyResolved:false,
+    long:'long',
+    lat:'lat',
+
+   }
+
+   const HistoryObj={
+    complaint: "",
+    user:"",
+    orderNo:"",
+    "assignedDate": "",
+    "issueList": "",
+    "workDone":"",
+    "servicePartsConsumed": "",
+    "resolvedDate" : "",
+    "totalDays":"",
+    "contactPersonName": "",
+    "contactNumber": "",
+    "location": "",
+    "complaintStatus":  "",
+    "additionalRemarks": "",
+    "finalBarCode": "",
+    "vendorFeedback": [],
+    "nccFeedback": [],
+    "shopPic": {},
+    "beforePic": {},
+    "afterPic": {},
+    "optionalPic": {},
+    historyDissatisfied:[],
+    //more headings that is not a part of standard headings
+    voltage:'',
+    level:'',
+    reportDateTime:'',
+    compressorFault:{},
+    gasLeak:{},
+    otherPartFaults:{},
+    moreOtherPartFaults:{},
+    service:{},
+    closeComplaint:{},
+    techFeedback:'',
+    technician:[],
+    long:'',
+    lat:'',
+
+   }
+   module.exports = {ReturnObj,HistoryObj}
