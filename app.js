@@ -15,18 +15,39 @@ const config = require("./config");
 
 app.use(cors.corsWithOptions);
 
-// ---------- MongoDB ----------
-mongoose
-  .connect(config.mongoUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    console.log("MongoDB connected -> db:", mongoose.connection.name);
-  })
-  .catch(err => {
-    console.error("MongoDB connection error:", err.message);
-  });
+// ---------- MongoDB (serverless-safe cached connection) ----------
+// Vercel har invocation pe module reuse karta hai, isliye connection ko
+// global pe cache karte hain — warna har request nayi connection banati.
+let cached = global.__mongooseCache;
+if (!cached) cached = global.__mongooseCache = { conn: null, promise: null, error: null };
+
+function connectDB() {
+  if (cached.conn) return Promise.resolve(cached.conn);
+  if (!config.mongoUrl) return Promise.reject(new Error('MONGO_URI environment variable set nahi hai'));
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(config.mongoUrl, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 8000,
+        bufferCommands: false
+      })
+      .then(m => {
+        cached.conn = m;
+        cached.error = null;
+        console.log('MongoDB connected -> db:', mongoose.connection.name);
+        return m;
+      })
+      .catch(err => {
+        cached.promise = null;          // agli request dobara try kare
+        cached.error = err;
+        console.error('MongoDB connection error:', err.message);
+        throw err;
+      });
+  }
+  return cached.promise;
+}
 
 app.set('trust proxy', 1);
 
@@ -49,13 +70,36 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(cookieParser());
 
+// ---------- Har request se pehle DB connected ho ----------
+app.use(async (req, res, next) => {
+  if (req.path === '/health') return next();   // health check DB ke baghair bhi jawab de
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(503).json({
+      success: false,
+      message: 'Database connection failed',
+      error: err.message
+    });
+  }
+});
+
 // ---------- Health check ----------
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    db: mongoose.connection.name || null,
-    dbState: mongoose.connection.readyState // 1 = connected
-  });
+  connectDB().then(
+    () => res.json({
+      status: 'ok',
+      db: mongoose.connection.name || null,
+      dbState: mongoose.connection.readyState // 1 = connected
+    }),
+    err => res.status(503).json({
+      status: 'db_error',
+      db: null,
+      dbState: mongoose.connection.readyState,
+      error: err.message
+    })
+  );
 });
 
 // ---------- API routes (/pos/...) ----------
