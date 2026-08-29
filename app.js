@@ -43,10 +43,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ---------- View engine (error pages) ----------
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
 // ---------- Parsers ----------
 app.use(logger('dev'));
 app.use(express.json({ limit: '20mb' }));
