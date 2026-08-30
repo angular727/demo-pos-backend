@@ -51,6 +51,11 @@ console.log("find inside get Inventorys: ", find);
     console.log("find inside get Inventorys: ", find);
     Inventory.find(find)
     .populate("productRef")
+    .populate({
+      // Branch column ko user ka naam chahiye, sirf id nahi
+      path: 'user',
+      select: 'name shopName username'
+    })
       .then(
         (Inventory) => {
           res.statusCode = 200;

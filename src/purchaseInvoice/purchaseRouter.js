@@ -36,6 +36,11 @@ PurchaseRouter
     console.log("find inside get Purchase: ", find);
     Purchase.find(find)
     .populate({
+      // Branch column ko user ka naam chahiye, sirf id nahi
+      path: 'user',
+      select: 'name shopName username'
+    })
+    .populate({
       path: 'supplierRef',
     })
     .populate({
