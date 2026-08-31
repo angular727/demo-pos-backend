@@ -1,5 +1,7 @@
 const STORE_NAME = process.env.STORE_NAME || "Demo POS Store";
 const STORE_TAGLINE = process.env.STORE_TAGLINE || "Quality You Can Trust";
+const STORE_ADDRESS = process.env.STORE_ADDRESS || "Khanpur Road, Rahim Yar Khan";
+const STORE_PHONE = process.env.STORE_PHONE || "030012334567";
 const fs = require('fs')
 
 const PDFDocument = require("pdfkit");
@@ -420,7 +422,7 @@ function generateFooter(doc,invoice) {
       // .text("Lab test values should be interpreted by a physician in the context of clinical picture.This document is NEVER Challengeable at any PLACE/COURT and in any CONDITION", 90,
       // pageHeight-30, )
       .font("Helvetica-Bold")
-      .text("Khanpur Road, Rahim Yar Khan Tel: +92 3006733378", 50,
+      .text(`${STORE_ADDRESS} Tel: ${STORE_PHONE}`, 50,
       pageHeight+10, { align: "center" })
 }
 
